@@ -31,7 +31,7 @@ $ log -n ~/work/rt/my-engagement/2020-02-05/log.txt
 * Then log messages with `log <message>`:
 
 ```
-$ log set phishing email to AThompson
+$ log sent phishing email to AThompson
 [+] Log message added to /home/m0rv4i/work/rt/my-engagement/2020-02-05/log.txt.
 ```
 
@@ -42,7 +42,7 @@ This will append a timestamped log to the file.
 ```
 $ log -s
 [*] Showing log: /home/m0rv4i/work/rt/my-engagement/2020-02-05/log.txt
-[2020-02-05 14:45:03.590915] - set phishing email to AThompson
+[2020-02-05 14:45:03.590915] - sent phishing email to AThompson
 [2020-02-05 14:47:16.177236] - got an implant on AThompson's box
 ```
 This will also detail the current log.
