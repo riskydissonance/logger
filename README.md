@@ -32,7 +32,7 @@ $ log -n ~/work/rt/my-engagement/2020-02-05/log.txt
 
 ```
 $ log set phishing email to AThompson
-[+] Log added.
+[+] Log message added to /home/m0rv4i/work/rt/my-engagement/2020-02-05/log.txt.
 ```
 
 This will append a timestamped log to the file.
