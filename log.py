@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import sys, argparse, os, datetime
+import sys, argparse, os, datetime, subprocess
 
 log_files_path = os.path.expanduser("~/.log-files")
 
@@ -14,13 +14,19 @@ class Colours:
 
 
 def create_arg_parser():
-    parser = argparse.ArgumentParser(description = "Add log messages to a custom log")
+    parser = argparse.ArgumentParser(description = "Add log messages to a custom log.")
     exclusive = parser.add_mutually_exclusive_group()
     exclusive.add_argument("-l", "--list-logs", help = "list previous log files", action = "store_true")
-    exclusive.add_argument("-n", "--new-log", help = "create a new log file")
-    exclusive.add_argument("-s", "--show-log", help = "display the current log", action = "store_true")
+    exclusive.add_argument("-n", "--new-log", help = "create a new log file or switch to an old one")
+    exclusive.add_argument("-x", "--show-log", help = "display the current log", action = "store_true")
     exclusive.add_argument("-d", "--delete-log", help = "delete the current log", action = "store_true")
-    exclusive.add_argument("message", nargs="*", help="the log message", default = "")
+    exclusive.add_argument("-g", "--grep", help = "grep the log for a word or phrase")
+    message_group = parser.add_argument_group()
+    message_type_group = message_group.add_mutually_exclusive_group()
+    message_type_group.add_argument("-s", "--success", help="add a success log message", action = "store_true")
+    message_type_group.add_argument("-f", "--failure", help="add a fail log message", action = "store_true")
+    message_type_group.add_argument("-m", "--remember", help="add a remind me message", action = "store_true")
+    message_group.add_argument("message", nargs="*", help="the log message", default = "")
     return parser
 
 
@@ -31,7 +37,7 @@ def get_log_file():
         sys.exit(1)
 
     with open(log_files_path, "r") as f:
-        lines = [line for line in f.read().splitlines() if line != ""]
+        lines = [line for line in f.read().splitlines() if line.strip() != ""]
 
         if len(lines) == 0:
             print(f"{Colours.RED}No log file has been created yet.{Colours.END}")
@@ -53,6 +59,11 @@ def main():
         with open(log_files_path, "r") as f:
             print(f"{Colours.BLUE}[*] Log files:{Colours.END}")
             print(f.read())
+
+    elif args.grep:
+        log_file = get_log_file()
+        output = subprocess.check_output(["grep", "--color=NONE", f"{args.grep}", f"{log_file}"]).decode()
+        print(output)
 
 
     elif args.new_log:
@@ -99,7 +110,7 @@ def main():
 
         with open(log_files_path, 'w') as f:
             lines = lines[:-1]
-            lines = [line for line in lines if line != ""]
+            lines = [line for line in lines if line.strip() != ""]
             f.writelines(lines)
 
         print(f"{Colours.GREEN}[*] Log deleted: {log_file}{Colours.END}")
@@ -112,8 +123,16 @@ def main():
             message = " ".join(args.message)
             time = datetime.datetime.now()
 
-            f.write(f"{Colours.GREEN}[{time}] - {Colours.BLUE}{message}{Colours.END}\n")
+            if args.success:
+                message = f"{Colours.GREEN}[{time}] [S] - {message}{Colours.END}\n"
+            elif args.failure:
+                message = f"{Colours.RED}[{time}] [F] - {message}{Colours.END}\n"
+            elif args.remember:
+                message = f"{Colours.BLUE}[{time}] [REMEMBER] - {message}{Colours.END}\n"
+            else:
+                message = f"{Colours.BLUE}[{time}] [*] - {message}{Colours.END}\n"
 
+            f.write(message)
             print(f"{Colours.GREEN}[+] Log message added to {log_file}.{Colours.END}")
 
     else:
